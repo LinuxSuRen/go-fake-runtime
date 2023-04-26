@@ -42,9 +42,10 @@ func TestLookPath(t *testing.T) {
 
 	fakeWithErr := FakeExecer{
 		ExpectError:     errors.New("fake"),
+		ExpectOutput:    "output",
 		ExpectErrOutput: "error",
 	}
 	result, err = fakeWithErr.RunCommandAndReturn("", "")
-	assert.Equal(t, "error", result)
+	assert.Equal(t, "outputerror", result)
 	assert.NotNil(t, err)
 }

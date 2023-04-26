@@ -40,7 +40,8 @@ func (f FakeExecer) RunCommandAndReturn(name, dir string, args ...string) (resul
 	if err = f.ExpectError; err == nil {
 		result = f.ExpectOutput
 	} else {
-		result = f.ExpectErrOutput
+		result = f.ExpectOutput
+		result += f.ExpectErrOutput
 	}
 	return
 }

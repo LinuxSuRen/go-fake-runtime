@@ -102,7 +102,8 @@ func (e DefaultExecer) RunCommandAndReturn(name, dir string, args ...string) (re
 	if err = e.RunCommandWithBuffer(name, dir, stdout, stderr, args...); err == nil {
 		result = stdout.String()
 	} else {
-		result = stderr.String()
+		result = stdout.String()
+		result += stderr.String()
 	}
 	return
 }
