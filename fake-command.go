@@ -10,6 +10,7 @@ type FakeExecer struct {
 	ExpectError         error
 	ExpectLookPathError error
 	ExpectOutput        string
+	ExpectErrOutput     string
 	ExpectOS            string
 	ExpectArch          string
 }
@@ -36,8 +37,11 @@ func (f FakeExecer) RunCommandInDir(name, dir string, args ...string) error {
 
 // RunCommandAndReturn is a fake method
 func (f FakeExecer) RunCommandAndReturn(name, dir string, args ...string) (result string, err error) {
-	err = f.ExpectError
-	result = f.ExpectOutput
+	if err = f.ExpectError; err == nil {
+		result = f.ExpectOutput
+	} else {
+		result = f.ExpectErrOutput
+	}
 	return
 }
 

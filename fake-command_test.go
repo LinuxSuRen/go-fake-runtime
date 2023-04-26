@@ -11,6 +11,7 @@ func TestLookPath(t *testing.T) {
 	fake := FakeExecer{
 		ExpectLookPathError: errors.New("fake"),
 		ExpectOutput:        "output",
+		ExpectErrOutput:     "error",
 		ExpectOS:            "os",
 		ExpectArch:          "arch",
 	}
@@ -31,9 +32,19 @@ func TestLookPath(t *testing.T) {
 	assert.Nil(t, fake.RunCommandWithIO("", "", nil, nil))
 	assert.Nil(t, fake.RunCommandInDir("", ""))
 
-	_, err = fake.RunCommandAndReturn("", "")
+	var result string
+	result, err = fake.RunCommandAndReturn("", "")
+	assert.Equal(t, "output", result)
 	assert.Nil(t, err)
 	assert.Nil(t, fake.RunCommandWithSudo("", ""))
 	assert.Nil(t, fake.RunCommandWithBuffer("", "", nil, nil))
 	assert.Nil(t, fake.SystemCall("", nil, nil))
+
+	fakeWithErr := FakeExecer{
+		ExpectError:     errors.New("fake"),
+		ExpectErrOutput: "error",
+	}
+	result, err = fakeWithErr.RunCommandAndReturn("", "")
+	assert.Equal(t, "error", result)
+	assert.NotNil(t, err)
 }

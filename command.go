@@ -98,8 +98,11 @@ func (e DefaultExecer) Arch() string {
 // RunCommandAndReturn runs a command, then returns the output
 func (e DefaultExecer) RunCommandAndReturn(name, dir string, args ...string) (result string, err error) {
 	stdout := &bytes.Buffer{}
-	if err = e.RunCommandWithBuffer(name, dir, stdout, nil, args...); err == nil {
+	stderr := &bytes.Buffer{}
+	if err = e.RunCommandWithBuffer(name, dir, stdout, stderr, args...); err == nil {
 		result = stdout.String()
+	} else {
+		result = stderr.String()
 	}
 	return
 }

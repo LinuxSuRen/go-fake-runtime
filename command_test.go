@@ -1,11 +1,12 @@
 package exec
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	osexec "os/exec"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRuntime(t *testing.T) {
@@ -85,4 +86,11 @@ func TestDefaultExecer(t *testing.T) {
 			assert.Equal(t, tt.expectErr, err != nil, err)
 		})
 	}
+}
+
+func TestRunCommandAndReturn(t *testing.T) {
+	ex := &DefaultExecer{}
+	result, err := ex.RunCommandAndReturn("go", "", "fake")
+	assert.NotNil(t, err)
+	assert.Equal(t, "go fake: unknown command\nRun 'go help' for usage.\n", result)
 }
