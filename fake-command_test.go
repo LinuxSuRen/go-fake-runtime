@@ -48,4 +48,5 @@ func TestLookPath(t *testing.T) {
 	result, err = fakeWithErr.RunCommandAndReturn("", "")
 	assert.Equal(t, "outputerror", result)
 	assert.NotNil(t, err)
+	assert.Error(t, fakeWithErr.MkdirAll("", 0))
 }

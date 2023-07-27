@@ -21,6 +21,7 @@ type Execer interface {
 	RunCommandWithBuffer(name, dir string, stdout, stderr *bytes.Buffer, args ...string) error
 	RunCommandWithIO(name, dir string, stdout, stderr io.Writer, args ...string) (err error)
 	SystemCall(name string, argv []string, envv []string) (err error)
+	MkdirAll(path string, perm os.FileMode) error
 	OS() string
 	Arch() string
 }
@@ -83,6 +84,11 @@ func (e DefaultExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writ
 		err = command.Wait()
 	}
 	return
+}
+
+// MkdirAll is the wrapper of os.MkdirAll
+func (e DefaultExecer) MkdirAll(path string, perm os.FileMode) error {
+	return os.MkdirAll(path, perm)
 }
 
 // OS returns the os name

@@ -94,3 +94,9 @@ func TestRunCommandAndReturn(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Equal(t, "go fake: unknown command\nRun 'go help' for usage.\n", result)
 }
+
+func TestMkdirAll(t *testing.T) {
+	ex := &DefaultExecer{}
+	err := ex.MkdirAll(os.TempDir(), 0755)
+	assert.NoError(t, err)
+}
