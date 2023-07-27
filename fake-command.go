@@ -3,6 +3,7 @@ package exec
 import (
 	"bytes"
 	"io"
+	"os"
 )
 
 // FakeExecer is for the unit test purposes
@@ -63,6 +64,11 @@ func (f FakeExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer,
 
 // SystemCall is a fake method
 func (f FakeExecer) SystemCall(name string, argv []string, envv []string) error {
+	return f.ExpectError
+}
+
+// MkdirAll is the wrapper of os.MkdirAll
+func (f FakeExecer) MkdirAll(path string, perm os.FileMode) error {
 	return f.ExpectError
 }
 
