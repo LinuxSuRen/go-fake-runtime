@@ -15,6 +15,7 @@ type Execer interface {
 	LookPath(string) (string, error)
 	Command(name string, arg ...string) ([]byte, error)
 	RunCommand(name string, arg ...string) (err error)
+	RunCommandWithEnv(name string, argv, envv []string, stdout, stderr io.Writer) (err error)
 	RunCommandInDir(name, dir string, args ...string) error
 	RunCommandAndReturn(name, dir string, args ...string) (result string, err error)
 	RunCommandWithSudo(name string, args ...string) (err error)
@@ -54,13 +55,41 @@ func (e DefaultExecer) RunCommand(name string, arg ...string) error {
 	return e.RunCommandWithIO(name, "", os.Stdout, os.Stderr, arg...)
 }
 
+// RunCommandWithEnv runs a command with given Env
+func (e DefaultExecer) RunCommandWithEnv(name string, argv, envv []string, stdout, stderr io.Writer) (err error) {
+	command := exec.Command(name, argv...)
+	command.Env = envv
+	//var stdout []byte
+	//var errStdout error
+	stdoutIn, _ := command.StdoutPipe()
+	stderrIn, _ := command.StderrPipe()
+	err = command.Start()
+	if err == nil {
+		// cmd.Wait() should be called only after we finish reading
+		// from stdoutIn and stderrIn.
+		// wg ensures that we finish
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			_, _ = copyAndCapture(stdout, stdoutIn)
+			wg.Done()
+		}()
+
+		_, _ = copyAndCapture(stderr, stderrIn)
+
+		wg.Wait()
+
+		err = command.Wait()
+	}
+	return
+}
+
 // RunCommandWithIO runs a command with given IO
 func (e DefaultExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer, args ...string) (err error) {
 	command := exec.Command(name, args...)
 	if dir != "" {
 		command.Dir = dir
 	}
-
 	//var stdout []byte
 	//var errStdout error
 	stdoutIn, _ := command.StdoutPipe()

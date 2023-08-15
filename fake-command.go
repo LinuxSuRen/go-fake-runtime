@@ -62,6 +62,11 @@ func (f FakeExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer,
 	return f.ExpectError
 }
 
+// RunCommandWithEnv is a fake method
+func (f FakeExecer) RunCommandWithEnv(name string, argv, envv []string, stdout, stderr io.Writer) error {
+	return f.ExpectError
+}
+
 // SystemCall is a fake method
 func (f FakeExecer) SystemCall(name string, argv []string, envv []string) error {
 	return f.ExpectError
