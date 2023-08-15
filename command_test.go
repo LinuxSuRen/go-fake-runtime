@@ -76,6 +76,9 @@ func TestDefaultExecer(t *testing.T) {
 				tt.verify(t, outStr)
 			}
 
+			err = ex.RunCommandWithEnv(tt.cmd, tt.args, nil, os.Stdout, os.Stderr)
+			assert.Equal(t, tt.expectErr, err != nil, err)
+
 			err = ex.RunCommandWithIO(tt.cmd, os.TempDir(), os.Stdout, os.Stderr, tt.args...)
 			assert.Equal(t, tt.expectErr, err != nil, err)
 
