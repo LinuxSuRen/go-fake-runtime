@@ -14,9 +14,11 @@ func TestLookPath(t *testing.T) {
 		ExpectErrOutput:     "error",
 		ExpectOS:            "os",
 		ExpectArch:          "arch",
+		ExpectLookPath:      "lookpath",
 	}
-	_, err := fake.LookPath("")
+	targetPath, err := fake.LookPath("")
 	assert.NotNil(t, err)
+	assert.Equal(t, "lookpath", targetPath)
 
 	fake.ExpectLookPathError = nil
 	_, err = fake.LookPath("")
