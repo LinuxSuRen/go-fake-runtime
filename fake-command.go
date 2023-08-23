@@ -13,11 +13,12 @@ type FakeExecer struct {
 	ExpectErrOutput     string
 	ExpectOS            string
 	ExpectArch          string
+	ExpectLookPath      string
 }
 
 // LookPath is a fake method
 func (f FakeExecer) LookPath(path string) (string, error) {
-	return "", f.ExpectLookPathError
+	return f.ExpectLookPath, f.ExpectLookPathError
 }
 
 // Command is a fake method
