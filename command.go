@@ -50,6 +50,7 @@ type Execer interface {
 	MkdirAll(path string, perm os.FileMode) error
 	OS() string
 	Arch() string
+	WithContext(context.Context) Execer
 }
 
 const (
@@ -67,16 +68,18 @@ type defaultExecer struct {
 }
 
 func NewDefaultExecer() Execer {
-return NewDefaultExecerWithContext(nil)
+	return NewDefaultExecerWithContext(context.TODO())
 }
 
 func NewDefaultExecerWithContext(ctx context.Context) Execer {
-	if ctx == nil {
-		ctx = context.TODO()
-	}
 	return &defaultExecer{
 		ctx: ctx,
 	}
+}
+
+func (e *defaultExecer) WithContext(ctx context.Context) Execer {
+	e.ctx = ctx
+	return e
 }
 
 // LookPath is the wrapper of os/exec.LookPath
