@@ -1,7 +1,32 @@
+/*
+MIT License
+
+Copyright (c) 2023 Rick
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 package exec
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os"
 	"os/exec"
@@ -37,27 +62,41 @@ const (
 )
 
 // DefaultExecer is a wrapper for the OS exec
-type DefaultExecer struct {
+type defaultExecer struct {
+	ctx context.Context
+}
+
+func NewDefaultExecer() Execer {
+return NewDefaultExecerWithContext(nil)
+}
+
+func NewDefaultExecerWithContext(ctx context.Context) Execer {
+	if ctx == nil {
+		ctx = context.TODO()
+	}
+	return &defaultExecer{
+		ctx: ctx,
+	}
 }
 
 // LookPath is the wrapper of os/exec.LookPath
-func (e DefaultExecer) LookPath(file string) (string, error) {
+func (e *defaultExecer) LookPath(file string) (string, error) {
 	return exec.LookPath(file)
 }
 
 // Command is the wrapper of os/exec.Command
-func (e DefaultExecer) Command(name string, arg ...string) ([]byte, error) {
-	return exec.Command(name, arg...).CombinedOutput()
+func (e *defaultExecer) Command(name string, arg ...string) ([]byte, error) {
+	return exec.CommandContext(e.ctx, name, arg...).CombinedOutput()
 }
 
 // RunCommand runs a command
-func (e DefaultExecer) RunCommand(name string, arg ...string) error {
+func (e *defaultExecer) RunCommand(name string, arg ...string) error {
 	return e.RunCommandWithIO(name, "", os.Stdout, os.Stderr, arg...)
 }
 
 // RunCommandWithEnv runs a command with given Env
-func (e DefaultExecer) RunCommandWithEnv(name string, argv, envv []string, stdout, stderr io.Writer) (err error) {
-	command := exec.Command(name, argv...)
+func (e *defaultExecer) RunCommandWithEnv(name string, argv, envv []string, stdout, stderr io.Writer) (err error) {
+	command := exec.CommandContext(e.ctx, name, argv...)
 	command.Env = envv
 	//var stdout []byte
 	//var errStdout error
@@ -85,8 +124,8 @@ func (e DefaultExecer) RunCommandWithEnv(name string, argv, envv []string, stdou
 }
 
 // RunCommandWithIO runs a command with given IO
-func (e DefaultExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer, args ...string) (err error) {
-	command := exec.Command(name, args...)
+func (e *defaultExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer, args ...string) (err error) {
+	command := exec.CommandContext(e.ctx, name, args...)
 	if dir != "" {
 		command.Dir = dir
 	}
@@ -116,22 +155,22 @@ func (e DefaultExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writ
 }
 
 // MkdirAll is the wrapper of os.MkdirAll
-func (e DefaultExecer) MkdirAll(path string, perm os.FileMode) error {
+func (e *defaultExecer) MkdirAll(path string, perm os.FileMode) error {
 	return os.MkdirAll(path, perm)
 }
 
 // OS returns the os name
-func (e DefaultExecer) OS() string {
+func (e *defaultExecer) OS() string {
 	return runtime.GOOS
 }
 
 // Arch returns the os arch
-func (e DefaultExecer) Arch() string {
+func (e *defaultExecer) Arch() string {
 	return runtime.GOARCH
 }
 
 // RunCommandAndReturn runs a command, then returns the output
-func (e DefaultExecer) RunCommandAndReturn(name, dir string, args ...string) (result string, err error) {
+func (e *defaultExecer) RunCommandAndReturn(name, dir string, args ...string) (result string, err error) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 	if err = e.RunCommandWithBuffer(name, dir, stdout, stderr, args...); err == nil {
@@ -145,7 +184,7 @@ func (e DefaultExecer) RunCommandAndReturn(name, dir string, args ...string) (re
 
 // RunCommandWithBuffer runs a command with buffer
 // stdout and stderr could be nil
-func (e DefaultExecer) RunCommandWithBuffer(name, dir string, stdout, stderr *bytes.Buffer, args ...string) error {
+func (e *defaultExecer) RunCommandWithBuffer(name, dir string, stdout, stderr *bytes.Buffer, args ...string) error {
 	if stdout == nil {
 		stdout = &bytes.Buffer{}
 	}
@@ -156,12 +195,12 @@ func (e DefaultExecer) RunCommandWithBuffer(name, dir string, stdout, stderr *by
 }
 
 // RunCommandInDir runs a command
-func (e DefaultExecer) RunCommandInDir(name, dir string, args ...string) error {
+func (e *defaultExecer) RunCommandInDir(name, dir string, args ...string) error {
 	return e.RunCommandWithIO(name, dir, os.Stdout, os.Stderr, args...)
 }
 
 // RunCommandWithSudo runs a command with sudo
-func (e DefaultExecer) RunCommandWithSudo(name string, args ...string) (err error) {
+func (e *defaultExecer) RunCommandWithSudo(name string, args ...string) (err error) {
 	newArgs := make([]string, 0)
 	newArgs = append(newArgs, name)
 	newArgs = append(newArgs, args...)
@@ -169,7 +208,7 @@ func (e DefaultExecer) RunCommandWithSudo(name string, args ...string) (err erro
 }
 
 // SystemCall is the wrapper of syscall.Exec
-func (e DefaultExecer) SystemCall(name string, argv []string, envv []string) (err error) {
+func (e *defaultExecer) SystemCall(name string, argv []string, envv []string) (err error) {
 	return syscall.Exec(name, argv, envv)
 }
 
