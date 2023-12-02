@@ -131,10 +131,22 @@ func TestMkdirAll(t *testing.T) {
 }
 
 func TestCommandWithContext(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second)
-	defer cancel()
+	t.Run("pass context when new instance", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.TODO(), time.Second)
+		defer cancel()
 
-	execer := NewDefaultExecerWithContext(ctx)
-	err := execer.RunCommand("sleep 3")
-	assert.Error(t, err)
+		execer := NewDefaultExecerWithContext(ctx)
+		err := execer.RunCommand("sleep 3")
+		assert.Error(t, err)
+	})
+
+	t.Run("pass context with func", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.TODO(), time.Second)
+		defer cancel()
+
+		execer := NewDefaultExecer()
+		execer.WithContext(ctx)
+		err := execer.RunCommand("sleep 3")
+		assert.Error(t, err)
+	})
 }
