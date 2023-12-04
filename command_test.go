@@ -105,7 +105,7 @@ func TestDefaultExecer(t *testing.T) {
 			err = ex.RunCommandWithEnv(tt.cmd, tt.args, nil, os.Stdout, os.Stderr)
 			assert.Equal(t, tt.expectErr, err != nil, err)
 
-			err = ex.RunCommandWithIO(tt.cmd, os.TempDir(), os.Stdout, os.Stderr, tt.args...)
+			err = ex.RunCommandWithIO(tt.cmd, os.TempDir(), os.Stdout, os.Stderr, nil, tt.args...)
 			assert.Equal(t, tt.expectErr, err != nil, err)
 
 			err = ex.RunCommandInDir(tt.cmd, "", tt.args...)
