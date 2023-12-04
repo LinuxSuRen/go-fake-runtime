@@ -55,7 +55,8 @@ func TestLookPath(t *testing.T) {
 	assert.Equal(t, "os", fake.OS())
 	assert.Equal(t, "arch", fake.Arch())
 	assert.Nil(t, fake.RunCommand("", ""))
-	assert.Nil(t, fake.RunCommandWithIO("", "", nil, nil))
+	err = fake.RunCommandWithIO("", "", nil, nil, nil)
+	assert.Nil(t, err)
 	assert.Nil(t, fake.RunCommandWithEnv("", nil, nil, nil, nil))
 	assert.Nil(t, fake.RunCommandInDir("", ""))
 

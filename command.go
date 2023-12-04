@@ -45,12 +45,19 @@ type Execer interface {
 	RunCommandAndReturn(name, dir string, args ...string) (result string, err error)
 	RunCommandWithSudo(name string, args ...string) (err error)
 	RunCommandWithBuffer(name, dir string, stdout, stderr *bytes.Buffer, args ...string) error
-	RunCommandWithIO(name, dir string, stdout, stderr io.Writer, args ...string) (err error)
+	RunCommandWithIO(name, dir string, stdout, stderr io.Writer, p chan Process, args ...string) error
 	SystemCall(name string, argv []string, envv []string) (err error)
 	MkdirAll(path string, perm os.FileMode) error
 	OS() string
 	Arch() string
 	WithContext(context.Context) Execer
+}
+
+type Process interface {
+	Signal(sig os.Signal) error
+	Kill() error
+	Release() error
+	Wait() (*os.ProcessState, error)
 }
 
 const (
@@ -94,7 +101,8 @@ func (e *defaultExecer) Command(name string, arg ...string) ([]byte, error) {
 
 // RunCommand runs a command
 func (e *defaultExecer) RunCommand(name string, arg ...string) error {
-	return e.RunCommandWithIO(name, "", os.Stdout, os.Stderr, arg...)
+	err := e.RunCommandWithIO(name, "", os.Stdout, os.Stderr, nil, arg...)
+	return err
 }
 
 // RunCommandWithEnv runs a command with given Env
@@ -127,7 +135,7 @@ func (e *defaultExecer) RunCommandWithEnv(name string, argv, envv []string, stdo
 }
 
 // RunCommandWithIO runs a command with given IO
-func (e *defaultExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer, args ...string) (err error) {
+func (e *defaultExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer, p chan Process, args ...string) (err error) {
 	command := exec.CommandContext(e.ctx, name, args...)
 	if dir != "" {
 		command.Dir = dir
@@ -138,6 +146,10 @@ func (e *defaultExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Wri
 	stderrIn, _ := command.StderrPipe()
 	err = command.Start()
 	if err == nil {
+		if p != nil {
+			p <- command.Process
+		}
+
 		// cmd.Wait() should be called only after we finish reading
 		// from stdoutIn and stderrIn.
 		// wg ensures that we finish
@@ -194,12 +206,14 @@ func (e *defaultExecer) RunCommandWithBuffer(name, dir string, stdout, stderr *b
 	if stderr == nil {
 		stderr = &bytes.Buffer{}
 	}
-	return e.RunCommandWithIO(name, dir, stdout, stderr, args...)
+	err := e.RunCommandWithIO(name, dir, stdout, stderr, nil, args...)
+	return err
 }
 
 // RunCommandInDir runs a command
 func (e *defaultExecer) RunCommandInDir(name, dir string, args ...string) error {
-	return e.RunCommandWithIO(name, dir, os.Stdout, os.Stderr, args...)
+	err := e.RunCommandWithIO(name, dir, os.Stdout, os.Stderr, nil, args...)
+	return err
 }
 
 // RunCommandWithSudo runs a command with sudo

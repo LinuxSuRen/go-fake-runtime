@@ -88,7 +88,7 @@ func (f FakeExecer) RunCommandWithBuffer(name, dir string, stdout, stderr *bytes
 }
 
 // RunCommandWithIO is a fake method
-func (f FakeExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer, args ...string) error {
+func (f FakeExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer, p chan Process, args ...string) error {
 	return f.ExpectError
 }
 
