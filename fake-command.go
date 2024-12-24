@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2023 Rick
+Copyright (c) 2023-2024 Rick
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,34 +40,35 @@ type FakeExecer struct {
 	ExpectOS            string
 	ExpectArch          string
 	ExpectLookPath      string
+	Env                 map[string]string
 }
 
-func (f FakeExecer) WithContext(ctx context.Context) Execer {
+func (f *FakeExecer) WithContext(ctx context.Context) Execer {
 	return f
 }
 
 // LookPath is a fake method
-func (f FakeExecer) LookPath(path string) (string, error) {
+func (f *FakeExecer) LookPath(path string) (string, error) {
 	return f.ExpectLookPath, f.ExpectLookPathError
 }
 
 // Command is a fake method
-func (f FakeExecer) Command(name string, arg ...string) ([]byte, error) {
+func (f *FakeExecer) Command(name string, arg ...string) ([]byte, error) {
 	return []byte(f.ExpectOutput), f.ExpectError
 }
 
 // RunCommand runs a command
-func (f FakeExecer) RunCommand(name string, arg ...string) error {
+func (f *FakeExecer) RunCommand(name string, arg ...string) error {
 	return f.ExpectError
 }
 
 // RunCommandInDir is a fake method
-func (f FakeExecer) RunCommandInDir(name, dir string, args ...string) error {
+func (f *FakeExecer) RunCommandInDir(name, dir string, args ...string) error {
 	return f.ExpectError
 }
 
 // RunCommandAndReturn is a fake method
-func (f FakeExecer) RunCommandAndReturn(name, dir string, args ...string) (result string, err error) {
+func (f *FakeExecer) RunCommandAndReturn(name, dir string, args ...string) (result string, err error) {
 	if err = f.ExpectError; err == nil {
 		result = f.ExpectOutput
 	} else {
@@ -78,41 +79,57 @@ func (f FakeExecer) RunCommandAndReturn(name, dir string, args ...string) (resul
 }
 
 // RunCommandWithSudo is a fake method
-func (f FakeExecer) RunCommandWithSudo(name string, args ...string) (err error) {
+func (f *FakeExecer) RunCommandWithSudo(name string, args ...string) (err error) {
 	return f.ExpectError
 }
 
 // RunCommandWithBuffer is a fake method
-func (f FakeExecer) RunCommandWithBuffer(name, dir string, stdout, stderr *bytes.Buffer, args ...string) error {
+func (f *FakeExecer) RunCommandWithBuffer(name, dir string, stdout, stderr *bytes.Buffer, args ...string) error {
 	return f.ExpectError
 }
 
 // RunCommandWithIO is a fake method
-func (f FakeExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer, p chan Process, args ...string) error {
+func (f *FakeExecer) RunCommandWithIO(name, dir string, stdout, stderr io.Writer, p chan Process, args ...string) error {
 	return f.ExpectError
 }
 
 // RunCommandWithEnv is a fake method
-func (f FakeExecer) RunCommandWithEnv(name string, argv, envv []string, stdout, stderr io.Writer) error {
+func (f *FakeExecer) RunCommandWithEnv(name string, argv, envv []string, stdout, stderr io.Writer) error {
 	return f.ExpectError
 }
 
 // SystemCall is a fake method
-func (f FakeExecer) SystemCall(name string, argv []string, envv []string) error {
+func (f *FakeExecer) SystemCall(name string, argv []string, envv []string) error {
 	return f.ExpectError
 }
 
 // MkdirAll is the wrapper of os.MkdirAll
-func (f FakeExecer) MkdirAll(path string, perm os.FileMode) error {
+func (f *FakeExecer) MkdirAll(path string, perm os.FileMode) error {
 	return f.ExpectError
 }
 
 // OS returns the os name
-func (f FakeExecer) OS() string {
+func (f *FakeExecer) OS() string {
 	return f.ExpectOS
 }
 
 // Arch returns the os arch
-func (f FakeExecer) Arch() string {
+func (f *FakeExecer) Arch() string {
 	return f.ExpectArch
 }
+
+// Getenv returns the env value by key
+func (f *FakeExecer) Getenv(key string) string {
+	return f.Env[key]
+}
+
+// Setenv sets the key-value pair into the env
+func (f *FakeExecer) Setenv(key, value string) error {
+	if f.Env == nil {
+		f.Env = make(map[string]string)
+	}
+	f.Env[key] = value
+	return nil
+}
+
+var _ Execer = &FakeExecer{}

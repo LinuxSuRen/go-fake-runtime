@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2023 Rick
+Copyright (c) 2023-2024 Rick
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,8 @@ func TestRuntime(t *testing.T) {
 	execer := NewDefaultExecer()
 	assert.Equal(t, runtime.GOOS, execer.OS())
 	assert.Equal(t, runtime.GOARCH, execer.Arch())
+	assert.Nil(t, execer.Setenv("key", "value"))
+	assert.Equal(t, "value", execer.Getenv("key"))
 }
 
 func TestDefaultLookPath(t *testing.T) {

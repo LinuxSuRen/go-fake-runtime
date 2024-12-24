@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2023 Rick
+Copyright (c) 2023-2024 Rick
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,8 @@ type Execer interface {
 	MkdirAll(path string, perm os.FileMode) error
 	OS() string
 	Arch() string
+	Getenv(string) string
+	Setenv(string, string) error
 	WithContext(context.Context) Execer
 }
 
@@ -182,6 +184,16 @@ func (e *defaultExecer) OS() string {
 // Arch returns the os arch
 func (e *defaultExecer) Arch() string {
 	return runtime.GOARCH
+}
+
+// Getenv returns the env value by key
+func (e *defaultExecer) Getenv(key string) string {
+	return os.Getenv(key)
+}
+
+// Setenv sets the key-value pair into the env
+func (e *defaultExecer) Setenv(key, value string) error {
+	return os.Setenv(key, value)
 }
 
 // RunCommandAndReturn runs a command, then returns the output
