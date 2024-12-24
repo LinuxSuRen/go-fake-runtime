@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2023 Rick
+Copyright (c) 2023-2024 Rick
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ SOFTWARE.
 package exec
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -32,7 +33,7 @@ import (
 )
 
 func TestLookPath(t *testing.T) {
-	fake := FakeExecer{
+	fake := &FakeExecer{
 		ExpectLookPathError: errors.New("fake"),
 		ExpectOutput:        "output",
 		ExpectErrOutput:     "error",
@@ -40,6 +41,7 @@ func TestLookPath(t *testing.T) {
 		ExpectArch:          "arch",
 		ExpectLookPath:      "lookpath",
 	}
+	fake.WithContext(context.Background())
 	targetPath, err := fake.LookPath("")
 	assert.NotNil(t, err)
 	assert.Equal(t, "lookpath", targetPath)
@@ -77,4 +79,7 @@ func TestLookPath(t *testing.T) {
 	assert.Equal(t, "outputerror", result)
 	assert.NotNil(t, err)
 	assert.Error(t, fakeWithErr.MkdirAll("", 0))
+
+	assert.Nil(t, fake.Setenv("key", "value"))
+	assert.Equal(t, "value", fake.Getenv("key"))
 }

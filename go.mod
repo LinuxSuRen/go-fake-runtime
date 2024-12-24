@@ -1,6 +1,6 @@
 module github.com/linuxsuren/go-fake-runtime
 
-go 1.18
+go 1.23
 
 require github.com/stretchr/testify v1.8.2
 
